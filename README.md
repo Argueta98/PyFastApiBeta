@@ -17,7 +17,8 @@ Instalar complementos
 
 ```
 pip install fastapi
-pip install uvicorn 
+pip install uvicorn
+pip install motor
 ```
 
 Generar un archivo con requerimientos del ambito
