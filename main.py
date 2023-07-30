@@ -37,7 +37,7 @@ async def create_developer(developer: Developer):
         return JSONResponse(status_code=500, content={"message": "Error al ingresar el registro"})
 
 
-@app.put("developers")
+@app.put("developers/{id}")
 async def update_developer(data: Developer, id: str):
     try:
         db = await connection()
@@ -49,32 +49,35 @@ async def update_developer(data: Developer, id: str):
         return JSONResponse(status_code=500, content={"message": "Error al actualizar el registro"})
     
 
-@app.delete("/developers/{developer_id}")
-async def delete_developer(developer_id: str):
+
+
+
+
+
+@app.delete("/developers/{id}")
+async def delete_developer(data: Developer, id: str):
     try:
         db = await connection()
-        result = await db.developers.delete_one({"_id": ObjectId(developer_id)})
-        
-        if result.deleted_count == 0:
-            return JSONResponse(status_code=404, content={"message": "No se encontró el registro"})
-        
-        return JSONResponse(status_code=200, content={"message": "Registro eliminado"})
+        developers = await db.developers.find_one({"_id": ObjectId(id)})
+        if not developers:
+            return JSONResponse(status_code=400, content={"message": "Registro no encontrado"})
+        await db.developers.delete_one({"_id": ObjectId(id)})
+        return JSONResponse(status_code=201, content={"message": "Registro eliminado"})
     except Exception as error:
-        return JSONResponse(status_code=500, content={"message": "Error al eliminar el registro"})
+        print(error)
+        return JSONResponse(status_code=500, content={"message": "Ha ocurrido un error"})
     
 
-@app.get("/developers/{developer_id}")
-async def get_developer_by_id(developer_id: str):
+@app.delete("/developers/{id}")
+async def delete_developer(data: Developer, id: str):
     try:
         db = await connection()
-        developer = await db.developers.find_one({"_id": ObjectId(developer_id)})
-        
+        developer = await db.developers.find_one({"_id": ObjectId(id)})
+        developer["_id"] = str(developers["_id"])
         if not developer:
-            return JSONResponse(status_code=404, content={"message": "No se encontró el desarrollador"})
-        
-        # Convertir el ObjectId a una cadena para que sea serializable en JSON
-        developer["_id"] = str(developer["_id"])
-        
+            return JSONResponse(status_code=400, content={"message": "Registro no encontrado"})
         return JSONResponse(status_code=200, content={"data": developer})
     except Exception as error:
-        return JSONResponse(status_code=500, content={"message": "Error al buscar el desarrollador"})
+        print(error)
+        return JSONResponse(status_code=500, content={"message": "Ha ocurrido un error"})
+    
